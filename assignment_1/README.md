@@ -4,6 +4,8 @@ Ensure doing the following before running the code.
 
 ```shell
 cd ~/catkin_ws
+git clone https://github.com/SDeepakMallya/sc627_helper.git
+git clone https://github.com/TheSmilingSky/sc627_assignments.git
 catkin_make
 source devel/setup.bash
 cd sc627_assignments/assignment_1
@@ -12,7 +14,7 @@ cd ../../sc627_helper
 chmod +x move_xy_server.py
 ``` 
 
-In four parallel terminals, run the following.
+In four parallel terminals, run the following to visualize the simulation.
 
 ```shell
 roscore
