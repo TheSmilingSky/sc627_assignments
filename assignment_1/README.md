@@ -8,7 +8,7 @@ git clone https://github.com/SDeepakMallya/sc627_helper.git
 git clone https://github.com/TheSmilingSky/sc627_assignments.git
 catkin_make
 source devel/setup.bash
-cd sc627_assignments/assignment_1
+cd src/sc627_assignments/assignment_1
 chmod +x bug_1_ros.py
 cd ../../sc627_helper
 chmod +x move_xy_server.py
