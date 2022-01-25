@@ -1,18 +1,33 @@
+#!/usr/bin/env python3
+
+import rospy
+import actionlib
+from sc627_helper.msg import MoveXYAction, MoveXYGoal, MoveXYResult
 from helper import Point2D, PointsToLine2D, Polygon2D
 from bug_base import parseInputs
+import math
 
 class Bug1AlgoClass():
 
-	def __init__(self, start, goal, step_size, obstaclesList, verbose = False):
+	def __init__(self, start, goal, step_size, obstaclesList, client, verbose = False):
+
+		self.client = client
 
 		self.startPoint = Point2D(start[0], start[1])
 		self.goalPoint = Point2D(goal[0], goal[1])
+
+		self.localPos = MoveXYResult()
+		self.localPos.pose_final.x = start[0]
+		self.localPos.pose_final.y = start[1]
+		self.localPos.pose_final.theta = 0
+
+		self.localGoal = MoveXYGoal()
 
 		self.step_size = step_size
 		self.obstaclesList = obstaclesList
 
 		self.path = []
-		self.currentPosition = self.startPoint
+		self.currentPosition = self.LocalPosToPoint2D()
 
 		self.closestPolygon = None
 		self.closestDistance = float('inf')
@@ -23,6 +38,13 @@ class Bug1AlgoClass():
 		self.closestToGoalPoint = self.startPoint
 
 		self.verbose = verbose
+
+	def LocalPosToPoint2D(self):
+
+		x = self.localPos.pose_final.x
+		y = self.localPos.pose_final.y
+
+		return Point2D(x, y)
 
 
 	def findClosestPolygon(self):
@@ -38,18 +60,33 @@ class Bug1AlgoClass():
 				self.closestDistance = distance
 				self.closestPolygon = polygon
 
-
 	def moveAndUpdatePath(self):
 
-		self.currentPosition.move(Point2D(self.step_size*self.vector[0], self.step_size*self.vector[1]))
+		self.localGoal.pose_dest.x = self.currentPosition._x + self.step_size*self.vector[0]
+		self.localGoal.pose_dest.y = self.currentPosition._y + self.step_size*self.vector[1]
+		self.localGoal.pose_dest.theta = math.atan2(self.localGoal.pose_dest.y - self.localPos.pose_final.y, self.localGoal.pose_dest.x - self.localPos.pose_final.x)
+
+		print("localGoal: ", self.localGoal.pose_dest.x, self.localGoal.pose_dest.y, self.localGoal.pose_dest.theta)
+
+		self.client.send_goal(self.localGoal)
+		self.client.wait_for_result()
+
+		self.localPos = self.client.get_result()
+
+		self.currentPosition = self.LocalPosToPoint2D()
 
 		self.path.append((self.currentPosition._x, self.currentPosition._y))
+
+		
+		print("localPos: ", self.localPos.pose_final.x, self.localPos.pose_final.y)
 
 		# if self.verbose:
 		# 	print(self.path[-1])
 
 
 	def circumNavigation(self):
+
+		print("begin circumNavigation")
 
 		n = self.closestPolygon._n
 		V = self.closestPolygon._V
@@ -58,7 +95,7 @@ class Bug1AlgoClass():
 
 		initVector = (self.currentPosition-centroid)/self.currentPosition.euclideanDistance(centroid)
 
-		circumnavProximityLimit = int(1/self.step_size)
+		circumnavProximityLimit = 50
 
 		circumnavOrigin = Point2D(self.currentPosition._x, self.currentPosition._y)
 
@@ -69,10 +106,14 @@ class Bug1AlgoClass():
 
 		self.moveAndUpdatePath()
 
+		print("First step in circumnav successful")
+
 		circumNavLocalCnt = 1
 
 		# while circumNavLocalCnt < circumnavProximityLimit or circumnavOrigin.euclideanDistance(self.currentPosition)>= self.step_size:
 		while circumNavLocalCnt < circumnavProximityLimit or (initVector*newVector).coordinateSum()<0.7:
+
+			print("In circumnav loop")
 
 			localGoalDist = self.goalPoint.euclideanDistance(self.currentPosition)
 
@@ -97,6 +138,8 @@ class Bug1AlgoClass():
 
 		circumNavCnt = 0
 
+		print("localPos: ", self.localPos.pose_final.x, self.localPos.pose_final.y)
+
 		while self.goalPoint.euclideanDistance(self.currentPosition) > self.step_size:
 
 			self.findClosestPolygon()
@@ -108,6 +151,8 @@ class Bug1AlgoClass():
 				# move to point closest to goal
 				goalLine = PointsToLine2D(self.closestToGoalPoint, self.goalPoint)
 				while goalLine.computeDistancePointToSegment(self.currentPosition) > self.step_size:
+					
+					print("Moving towards closest point")
 
 					self.vector = self.closestPolygon.computeTangentVectorToPolygon(self.currentPosition)
 					
@@ -123,6 +168,8 @@ class Bug1AlgoClass():
 				if self.closestPolygon.computeDistancePointToPolygon(self.currentPosition)[0] < self.step_size:
 					return "Failure: No possible path to reach goal point", self.path
 
+			print("Free Roam")
+
 			L = PointsToLine2D(self.currentPosition, self.goalPoint)
 			
 			self.vector = (L.b, -L.a)
@@ -133,9 +180,19 @@ class Bug1AlgoClass():
 
 		return "Success", self.path
 
-def main():
+if __name__ == '__main__':
+
+	# ROS Initialization
+
+	rospy.init_node('bug1', anonymous = True)
+	client = actionlib.SimpleActionClient('move_xy', MoveXYAction)
+	client.wait_for_server()
+
+	# Read Input File
+
 	start, goal, step_size, obstaclesList = parseInputs('input.txt')
-	algo = Bug1AlgoClass(start, goal, step_size, obstaclesList, 'False')
+
+	algo = Bug1AlgoClass(start, goal, step_size, obstaclesList, client, 'False')
 	status, path = algo.bug1Algorithm()
 	print(status)
 	import numpy as np
@@ -147,7 +204,6 @@ def main():
 		t1 = plt.Polygon(obstaclesList[i], color = 'red', fill = False)
 		plt.gca().add_patch(t1)
 	plt.show()
-	# print('\n'.join([str(x) for x in path]))
 
-if __name__ == '__main__':
-	main()
+
+

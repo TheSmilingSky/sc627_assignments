@@ -7,12 +7,34 @@ class Point2D():
 		self._x = x
 		self._y = y
 
+	def __add__(self, other):
+		return Point2D(self._x + other._x, self._y + other._y)
+
+	def __sub__(self, other):
+		return Point2D(self._x - other._x, self._y - other._y)
+
+	def __mul__(self, other):
+		return Point2D(self._x * other._x, self._y * other._y)
+
+	def __truediv__(self, num):
+		return Point2D(self._x/num, self._y/num)
+
 	def move(self, other):
 
 		self._x += other._x
 		self._y += other._y
 
-	def euclideanDistance(self, other):
+	def reverse(self):
+		return Point2D(-self._x, -self._y)
+
+	def coordinateSum(self, other = None):
+
+		if not other:
+			return self._x + self._y
+
+		return self._x - other._x + self._y - other._y
+
+	def euclideanDistance(self, other = None):
 		
 		if not other:
 			return math.sqrt(self._x**2 + self._y**2)
@@ -104,16 +126,18 @@ class Polygon2D():
 		# print(minType)
 		if minType == 'V':
 
+			print("Vertex closest")
+
 			p1 = Point2D(minData[0], minData[1])
-			xx = -(p._y - p1._y)
-			yy = (p._x - p1._x)
+			xx = -(p._y - p1._y) + 0.3*(p1._x - p._x)
+			yy = (p._x - p1._x) + 0.3*(p1._y - p._y)
 
-			norm = math.sqrt(xx**2 + yy**2)
-
-			xx = xx/100
-			yy = yy/100
+			# xx = xx/100
+			# yy = yy/100
 
 		elif minType == 'E':
+
+			print("Edge closest")
 
 			order = 0.1*(2*self.isCounterClockwise() - 1)
 			p1 = Point2D(minData[0][0], minData[0][1])
@@ -122,7 +146,7 @@ class Polygon2D():
 			xx = order*(p2._x - p1._x)
 			yy = order*(p2._y - p1._y)
 
-			norm = math.sqrt(xx**2 + yy**2)
+		norm = math.sqrt(xx**2 + yy**2)
 
 		return (xx/norm, yy/norm)
 
