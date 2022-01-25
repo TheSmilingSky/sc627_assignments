@@ -3,9 +3,10 @@
 Ensure doing the following before running the code.
 
 ```shell
-cd ~/catkin_ws
+cd ~/catkin_ws/src
 git clone https://github.com/SDeepakMallya/sc627_helper.git
 git clone https://github.com/TheSmilingSky/sc627_assignments.git
+cd ..
 catkin_make
 source devel/setup.bash
 cd src/sc627_assignments/assignment_1
