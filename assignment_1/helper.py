@@ -7,25 +7,32 @@ class Point2D():
 		self._x = x
 		self._y = y
 
+
 	def __add__(self, other):
 		return Point2D(self._x + other._x, self._y + other._y)
+
 
 	def __sub__(self, other):
 		return Point2D(self._x - other._x, self._y - other._y)
 
+
 	def __mul__(self, other):
 		return Point2D(self._x * other._x, self._y * other._y)
 
+
 	def __truediv__(self, num):
 		return Point2D(self._x/num, self._y/num)
+
 
 	def move(self, other):
 
 		self._x += other._x
 		self._y += other._y
 
+
 	def reverse(self):
 		return Point2D(-self._x, -self._y)
+
 
 	def coordinateSum(self, other = None):
 
@@ -34,12 +41,14 @@ class Point2D():
 
 		return self._x - other._x + self._y - other._y
 
+
 	def euclideanDistance(self, other = None):
 		
 		if not other:
 			return math.sqrt(self._x**2 + self._y**2)
 
 		return math.sqrt((self._x - other._x)**2 + (self._y - other._y)**2)
+
 
 class PointsToLine2D():
 
@@ -50,6 +59,7 @@ class PointsToLine2D():
 		self.norm = p1.euclideanDistance(p2)
 		self.a, self.b, self.c = self.computeLineThroughTwoPoints()
 		self._params = [self.a, self.b, self.c]
+
 
 	def computeLineThroughTwoPoints(self):
 		
@@ -62,9 +72,11 @@ class PointsToLine2D():
 
 		return [self.a, self.b, self.c]
 
+
 	def computeDistancePointToLine(self, p):
 		
 		return abs(self.a*p._x + self.b*p._y + self.c)
+
 
 	def computeDistancePointToSegment(self, p):
 
@@ -78,12 +90,14 @@ class PointsToLine2D():
 		else:
 			return self.computeDistancePointToLine(p)
 
+
 class Polygon2D():
 	
 	def __init__(self, n, V):
 
 		self._n = n
 		self._V = V
+
 
 	def isCounterClockwise(self):
 
@@ -93,6 +107,7 @@ class Polygon2D():
 			signedArea += (self._V[i%self._n][0] - self._V[(i+1)%self._n][0])*(self._V[i%self._n][1] + self._V[(i+1)%self._n][1])
 		
 		return signedArea > 0
+
 
 	def computeDistancePointToPolygon(self, p):
 		
@@ -112,7 +127,7 @@ class Polygon2D():
 			if dist<minDist:
 				minDist = dist
 				minDistIdx = i
-		# print(dists)
+
 		if dists[(minDistIdx+1)%self._n] == minDist:
 			return minDist, 'V', self._V[(minDistIdx+1)%self._n]
 		elif dists[(minDistIdx-1)%self._n] == minDist:
@@ -120,24 +135,18 @@ class Polygon2D():
 
 		return minDist, 'E', (self._V[minDistIdx%self._n], self._V[(minDistIdx+1)%self._n])
 
+
 	def computeTangentVectorToPolygon(self, p):
 
 		minDist, minType, minData = self.computeDistancePointToPolygon(p)
-		# print(minType)
-		if minType == 'V':
 
-			print("Vertex closest")
+		if minType == 'V':
 
 			p1 = Point2D(minData[0], minData[1])
 			xx = -(p._y - p1._y) + 0.3*(p1._x - p._x)
 			yy = (p._x - p1._x) + 0.3*(p1._y - p._y)
 
-			# xx = xx/100
-			# yy = yy/100
-
 		elif minType == 'E':
-
-			print("Edge closest")
 
 			order = 0.1*(2*self.isCounterClockwise() - 1)
 			p1 = Point2D(minData[0][0], minData[0][1])
@@ -149,6 +158,7 @@ class Polygon2D():
 		norm = math.sqrt(xx**2 + yy**2)
 
 		return (xx/norm, yy/norm)
+
 
 def main():
 
@@ -180,12 +190,7 @@ def main():
 	print(P.computeTangentVectorToPolygon(Point2D(2,1)))
 	print(P.computeDistancePointToPolygon(Point2D(0.5,1.5)))
 	print(P.computeTangentVectorToPolygon(Point2D(0.5,1.5)))
-	# import matplotlib.pyplot as plt
-	# mysquare = [[0, 0], [0, 1], [1, 1], [1, 0]]
-	# square = plt.Polygon(mysquare, fc="r")
-	# plt.gca().add_patch(square)
-	# plt.axis([-0.5, 1.5, -0.5, 1.5])
-	# plt.show()
+
 
 if __name__=='__main__':
 	main()

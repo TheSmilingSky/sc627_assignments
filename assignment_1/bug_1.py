@@ -72,7 +72,7 @@ class Bug1AlgoClass():
 		circumNavLocalCnt = 1
 
 		# while circumNavLocalCnt < circumnavProximityLimit or circumnavOrigin.euclideanDistance(self.currentPosition)>= self.step_size:
-		while circumNavLocalCnt < circumnavProximityLimit or (initVector*newVector).coordinateSum()<0.7:
+		while circumNavLocalCnt < circumnavProximityLimit or (initVector*newVector).coordinateSum()<0.9:
 
 			localGoalDist = self.goalPoint.euclideanDistance(self.currentPosition)
 
@@ -101,13 +101,13 @@ class Bug1AlgoClass():
 
 			self.findClosestPolygon()
 
-			if self.closestDistance < 1.5*self.step_size:
+			if self.closestDistance < 2*self.step_size:
 
 				self.circumNavigation()
 				
 				# move to point closest to goal
 				goalLine = PointsToLine2D(self.closestToGoalPoint, self.goalPoint)
-				while goalLine.computeDistancePointToSegment(self.currentPosition) > self.step_size:
+				while goalLine.computeDistancePointToSegment(self.currentPosition) > 2*self.step_size:
 
 					self.vector = self.closestPolygon.computeTangentVectorToPolygon(self.currentPosition)
 					
@@ -133,12 +133,31 @@ class Bug1AlgoClass():
 
 		return "Success", self.path
 
+def plotAndSavePath(path, start, goal, goalDistanceLog):
+
+	np.savetxt('data/output_bug1.txt', path)
+
+	plt.plot(goalDistanceLog)
+	plt.savefig('data/goalDistFromBug.png')
+
+	plt.scatter(*np.array(path).T, s=4)
+	plt.plot(start[0], start[1], 'ro', markersize=10)
+	plt.plot(goal[0], goal[1],'go', markersize=10)
+
+	for i in range(len(obstaclesList)):
+		t1 = plt.Polygon(obstaclesList[i], color = 'red', fill = False)
+		plt.gca().add_patch(t1)
+
+	plt.savefig('data/path.png')
+
 def main():
 	start, goal, step_size, obstaclesList = parseInputs('input.txt')
 	algo = Bug1AlgoClass(start, goal, step_size, obstaclesList, 'False')
 	status, path = algo.bug1Algorithm()
 	print(status)
+
 	import numpy as np
+	np.savetxt('data/output_bug1.txt', path)
 	from matplotlib import pyplot as plt
 	plt.scatter(*np.array(path).T, s=4)
 	plt.plot(start[0], start[1], 'ro', markersize=10)
