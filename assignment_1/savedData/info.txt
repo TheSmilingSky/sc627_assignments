@@ -1,2 +1,0 @@
-The total length of path taken: 5.104338315632058
-Time taken by the algorithm is: 1009.6263697147369

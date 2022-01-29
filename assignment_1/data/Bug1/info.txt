@@ -1,0 +1,3 @@
+Result of the motion planning algorithm: Success
+The total length of path taken: 27.346575435580032
+Time taken by the algorithm is: 798.4340562820435

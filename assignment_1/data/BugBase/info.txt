@@ -1,0 +1,3 @@
+Result of the motion planning algorithm: Failure: No possible path to reach goal point
+The total length of path taken: 0.9469019724519154
+Time taken by the algorithm is: 15.969437837600708
