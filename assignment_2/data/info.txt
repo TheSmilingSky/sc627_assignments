@@ -1,0 +1,2 @@
+Result of the motion planning algorithm: Success
+Time taken by the algorithm is: 560.3965628147125

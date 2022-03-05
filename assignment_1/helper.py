@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 class Point2D():
 
@@ -17,6 +18,10 @@ class Point2D():
 
 
 	def __mul__(self, other):
+
+		if isinstance(other, (int, float)):
+			return Point2D(self._x * other, self._y * other)
+
 		return Point2D(self._x * other._x, self._y * other._y)
 
 
@@ -45,9 +50,9 @@ class Point2D():
 	def euclideanDistance(self, other = None):
 		
 		if not other:
-			return math.sqrt(self._x**2 + self._y**2)
+			return np.sqrt(self._x**2 + self._y**2)
 
-		return math.sqrt((self._x - other._x)**2 + (self._y - other._y)**2)
+		return np.sqrt((self._x - other._x)**2 + (self._y - other._y)**2)
 
 
 class PointsToLine2D():
@@ -155,7 +160,30 @@ class Polygon2D():
 			xx = order*(p2._x - p1._x)
 			yy = order*(p2._y - p1._y)
 
-		norm = math.sqrt(xx**2 + yy**2)
+		norm = np.sqrt(xx**2 + yy**2)
+
+		return (xx/norm, yy/norm)
+
+	def computeNormalVectorToPolygon(self, p):
+
+		minDist, minType, minData = self.computeDistancePointToPolygon(p)
+
+		if minType == 'V':
+
+			p1 = Point2D(minData[0], minData[1])
+			xx = (p._x - p1._x) + 0.3*(p1._y - p._y)
+			yy = (p._y - p1._y) - 0.3*(p1._x - p._x)
+
+		elif minType == 'E':
+
+			order = (2*self.isCounterClockwise() - 1)
+			p1 = Point2D(minData[0][0], minData[0][1])
+			p2 = Point2D(minData[1][0], minData[1][1])
+
+			xx = (p2._y - p1._y)
+			yy = -(p2._x - p1._x)
+
+		norm = np.sqrt(xx**2 + yy**2)
 
 		return (xx/norm, yy/norm)
 
